@@ -80,6 +80,12 @@ target_compile_options(${PROJECT_NAME}
   PUBLIC -DCGAL_HAS_THREADS
 )
 
+#####################
+## Python bindings ##
+#####################
+
+add_subdirectory(bindings/python/)
+
 #############
 ## Install ##
 #############
@@ -112,3 +118,5 @@ target_link_libraries(test_${PROJECT_NAME}
   mpfr
   gtest_main
 )
+
+
