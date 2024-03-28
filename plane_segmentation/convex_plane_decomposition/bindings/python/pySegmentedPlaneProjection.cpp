@@ -26,32 +26,25 @@ void callback(const convex_plane_decomposition_msgs::PlanarTerrain::ConstPtr& ms
     auto planar_terrain = fromMessage(*msg);
 
     planar_regions = planar_terrain.planarRegions;
-    std::cout << "message receied" << std::endl;
 }
 
 auto project = [](Eigen::Vector3d query_point)
 {
-//    auto planar_terrain_msg = ros::topic::waitForMessage<convex_plane_decomposition_msgs::PlanarTerrain>("/convex_plane_decompsosition_ros/planar_terrain", ros::Duration(5.0));
+//    planar_regions.clear();
 
-//    std::cout << "here" << std::endl;
-//    std::unique_ptr<convex_plane_decomposition::PlanarTerrain> planar_terrain(
-//        new convex_plane_decomposition::PlanarTerrain(convex_plane_decomposition::fromMessage(*planar_terrain_msg)));
-//    std::cout << "HERE" << std::endl;
+//    auto start = ros::Time::now();
+//    while (ros::Time::now() - start < ros::Duration(20) && planar_regions.empty())
+//    {
+//        ros::spinOnce();
+//    }
 
-    planar_regions.clear();
+//    if (planar_regions.empty())
+//    {
+//        std::cout << "no planar region detected." << std::endl;
+//        return Eigen::Vector3d();
+//    }
 
-    auto start = ros::Time::now();
-    while (ros::Time::now() - start < ros::Duration(20) && planar_regions.empty())
-    {
-        std::cout << ros::Time::now() - start << std::endl;
-        ros::spinOnce();
-    }
-
-    if (planar_regions.empty())
-    {
-        std::cout << "no planar region detected." << std::endl;
-        return Eigen::Vector3d();
-    }
+    ros::spinOnce();
 
     auto penaltyFunction = [](const Eigen::Vector3d& projectedPoint) { return 0.0; };
 
