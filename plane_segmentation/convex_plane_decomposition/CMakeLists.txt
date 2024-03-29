@@ -80,11 +80,6 @@ target_compile_options(${PROJECT_NAME}
   PUBLIC -DCGAL_HAS_THREADS
 )
 
-#####################
-## Python bindings ##
-#####################
-
-add_subdirectory(bindings/python/)
 
 #############
 ## Install ##

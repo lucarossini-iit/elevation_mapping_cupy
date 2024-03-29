@@ -127,3 +127,8 @@ target_link_libraries(${PROJECT_NAME}_TestShapeGrowing
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )
+
+##############
+## Bindings ##
+##############
+add_subdirectory(bindings/python)
