@@ -64,27 +64,28 @@ void minValues(grid_map::GridMap& map, const std::string& layerIn, const std::st
       for (int rowId = 0; rowId < numRows; ++rowId) {
         if (std::isnan(H_in(rowId, colId))) {
           auto& middleValue = H_out(rowId, colId);
+          middleValue = -1000;
 
           // left
-          if (colId > 0) {
-            const auto leftValue = H_out(rowId, colId - 1);
-            compareAndStoreMin(leftValue, middleValue, changedValue);
-          }
-          // right
-          if (colId < maxColId) {
-            const auto rightValue = H_out(rowId, colId + 1);
-            compareAndStoreMin(rightValue, middleValue, changedValue);
-          }
-          // top
-          if (rowId > 0) {
-            const auto topValue = H_out(rowId - 1, colId);
-            compareAndStoreMin(topValue, middleValue, changedValue);
-          }
-          // bottom
-          if (rowId < maxRowId) {
-            const auto bottomValue = H_out(rowId + 1, colId);
-            compareAndStoreMin(bottomValue, middleValue, changedValue);
-          }
+//          if (colId > 0) {
+//            const auto leftValue = H_out(rowId, colId - 1);
+//            compareAndStoreMin(leftValue, middleValue, changedValue);
+//          }
+//          // right
+//          if (colId < maxColId) {
+//            const auto rightValue = H_out(rowId, colId + 1);
+//            compareAndStoreMin(rightValue, middleValue, changedValue);
+//          }
+//          // top
+//          if (rowId > 0) {
+//            const auto topValue = H_out(rowId - 1, colId);
+//            compareAndStoreMin(topValue, middleValue, changedValue);
+//          }
+//          // bottom
+//          if (rowId < maxRowId) {
+//            const auto bottomValue = H_out(rowId + 1, colId);
+//            compareAndStoreMin(bottomValue, middleValue, changedValue);
+//          }
         } else {
           hasAtLeastOneValue = true;
         }
