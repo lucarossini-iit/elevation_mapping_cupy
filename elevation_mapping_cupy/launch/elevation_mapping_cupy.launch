@@ -1,9 +1,9 @@
 <launch>
+    <arg name="core_param_path" default="$(find elevation_mapping_cupy)/config/core/core_param.yaml"/>
+    <arg name="elevation_mapping_config_path" default="$(find elevation_mapping_cupy)/config/core/example_setup.yaml"/>
     <!-- Elevation mapping node -->
     <node pkg="elevation_mapping_cupy" type="elevation_mapping_node" name="elevation_mapping" output="screen">
-        <!--rosparam command="load" file="$(find elevation_mapping_cupy)/config/core/core_param.yaml"/-->
-        <!--rosparam command="load" file="$(find elevation_mapping_cupy)/config/core/example_setup.yaml"/-->
-        <rosparam command="load" file="$(find kyon_controller)/config/elevation_mapping/core_param.yaml"/>
-        <rosparam command="load" file="$(find kyon_controller)/config/elevation_mapping/centauro_elevation_mapping_config.yaml"/>
+        <rosparam command="load" file="$(arg core_param_path)"/>
+        <rosparam command="load" file="$(arg elevation_mapping_config_path)"/>
     </node>
 </launch>
