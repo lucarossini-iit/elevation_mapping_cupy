@@ -7,6 +7,7 @@
 #include <convex_plane_decomposition_msgs/PolygonWithHoles2d.h>
 
 #include <ros/ros.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -18,33 +19,26 @@ using namespace convex_plane_decomposition;
 
 namespace py = pybind11;
 
-ros::Subscriber sub;
-std::vector<PlanarRegion> planar_regions;
+ros::Subscriber sub, sub_boundaries;
+ros::Publisher pub_boundaries;
+std::vector<PlanarRegion> planar_regions, planar_regions_temp;
+visualization_msgs::MarkerArray boundaries;
 
 void callback(const convex_plane_decomposition_msgs::PlanarTerrain::ConstPtr& msg)
 {
     auto planar_terrain = fromMessage(*msg);
 
-    planar_regions = planar_terrain.planarRegions;
+    planar_regions_temp = planar_terrain.planarRegions;
+}
+
+void boundaries_callback(const visualization_msgs::MarkerArrayConstPtr& msg)
+{
+    boundaries = *msg;
 }
 
 auto project = [](Eigen::Vector3d query_point)
 {
-//    planar_regions.clear();
-
-//    auto start = ros::Time::now();
-//    while (ros::Time::now() - start < ros::Duration(20) && planar_regions.empty())
-//    {
-//        ros::spinOnce();
-//    }
-
-//    if (planar_regions.empty())
-//    {
-//        std::cout << "no planar region detected." << std::endl;
-//        return Eigen::Vector3d();
-//    }
-
-    ros::spinOnce();
+//    ros::spinOnce();
 
     auto penaltyFunction = [](const Eigen::Vector3d& projectedPoint) { return 0.0; };
 
@@ -52,6 +46,15 @@ auto project = [](Eigen::Vector3d query_point)
 
     return projection.positionInWorld;
 };
+
+auto update = []()
+{
+    planar_regions = planar_regions_temp;
+    pub_boundaries.publish(boundaries);
+};
+
+//std::function<void()> update;
+//void updateHandler() { update(); };
 
 bool init (std::string name, std::list<std::string> args)
 {
@@ -76,13 +79,33 @@ bool init (std::string name, std::list<std::string> args)
 
     ros::init(argc, argv, name, ros::init_options::NoSigintHandler);
 
+    ros::NodeHandle nh;
+
     ROS_INFO("Initialized roscpp under namespace %s with name %s",
              ros::this_node::getNamespace().c_str(),
              ros::this_node::getName().c_str()
             );
 
-    ros::NodeHandle nh;
+//    update = []()
+//    {
+//    //    ros::spinOnce();
+//        std::cout << "update" << std::endl;
+//        auto planar_terrain_ptr = ros::topic::waitForMessage<convex_plane_decomposition_msgs::PlanarTerrain>("/convex_plane_decomposition_ros/planar_terrain", *nh, ros::Duration(0.5));
+//        std::cout << "planar terrain message found" << std::endl;
+//        auto planar_terrain = fromMessage(*planar_terrain_ptr);
+//        planar_regions = planar_terrain.planarRegions;
+
+
+//        auto boundaries_ptr = ros::topic::waitForMessage<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries", *nh, ros::Duration(0.5));
+//        std::cout << "boundaries message found" << std::endl;
+//        boundaries = *boundaries_ptr;
+//        pub_boundaries.publish(boundaries);
+//    };
+
+
     sub = nh.subscribe("/convex_plane_decomposition_ros/planar_terrain", 1, callback);
+    sub_boundaries = nh.subscribe("/convex_plane_decomposition_ros/boundaries", 1, boundaries_callback);
+    pub_boundaries = nh.advertise<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries/update", 1, true);
 
     return true;
 }
@@ -100,7 +123,6 @@ bool shutdown()
     return false;
 }
 
-
 PYBIND11_MODULE(pysegmented_plane_projection, m)
 {
     py::class_<PlanarRegion>(m, "PlanarRegion")
@@ -112,4 +134,5 @@ PYBIND11_MODULE(pysegmented_plane_projection, m)
     m.def("init", init);
     m.def("shutdown", shutdown);
     m.def("project", project);
+    m.def("update", update);
 }
