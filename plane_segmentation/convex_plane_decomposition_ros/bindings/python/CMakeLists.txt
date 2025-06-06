@@ -12,5 +12,9 @@ target_link_libraries(pysegmented_plane_projection
                       ${convex_plane_decomposition_LIBRARIES}
                       ${catkin_LIBRARIES})
 
+target_include_directories(pysegmented_plane_projection
+                           PRIVATE
+                           ${pybind11_catkin_INCLUDE_DIRS})
+
 install(TARGETS pysegmented_plane_projection
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
