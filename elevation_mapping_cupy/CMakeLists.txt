@@ -76,5 +76,5 @@ install(
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(
-  DIRECTORY launch config
+  DIRECTORY launch config kyon_perception
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

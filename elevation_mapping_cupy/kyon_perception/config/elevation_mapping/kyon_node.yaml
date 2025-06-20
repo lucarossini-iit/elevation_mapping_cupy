@@ -1,0 +1,8 @@
+elevation_topic: '/elevation_mapping/elevation_map_raw'
+height_layer: 'elevation'
+target_frame_id: 'world'
+submap:
+  width: 3.0
+  length: 3.0
+publish_to_controller: true # if true, publishes to convex_plane_decompositon/planar_terrain
+frequency: 20.0 # frequency at which ConvexPlaneDecompositionNode is run 
