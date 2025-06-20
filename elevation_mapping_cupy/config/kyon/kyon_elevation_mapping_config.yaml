@@ -1,5 +1,5 @@
 #### Plugins ########
-plugin_config_file: '$(rospack find kyon_controller)/config/elevation_mapping/kyon_plugin_config.yaml'
+plugin_config_file: '$(rospack find elevation_mapping_cupy)/config/kyon/kyon_plugin_config.yaml'
 
 #### Channel Fusions ########
 pointcloud_channel_fusions:
