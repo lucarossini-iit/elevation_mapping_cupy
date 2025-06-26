@@ -16,5 +16,11 @@ target_include_directories(pysegmented_plane_projection
                            PRIVATE
                            ${pybind11_catkin_INCLUDE_DIRS})
 
+execute_process(
+    COMMAND ${Python3_EXECUTABLE} -c "import site, os; print(os.path.relpath(site.USER_SITE, site.USER_BASE))"
+    OUTPUT_VARIABLE PYTHON_SITE
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 install(TARGETS pysegmented_plane_projection
-DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
+
