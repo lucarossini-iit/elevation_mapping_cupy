@@ -19,6 +19,7 @@ using namespace convex_plane_decomposition;
 
 namespace py = pybind11;
 
+std::shared_ptr<ros::NodeHandle> nh_ptr;
 ros::Subscriber sub, sub_boundaries;
 ros::Publisher pub_boundaries;
 std::vector<PlanarRegion> planar_regions, planar_regions_temp;
@@ -38,11 +39,12 @@ void boundaries_callback(const visualization_msgs::MarkerArrayConstPtr& msg)
 
 auto project = [](Eigen::Vector3d query_point)
 {
-//    ros::spinOnce();
+    ros::spinOnce();
 
     auto penaltyFunction = [](const Eigen::Vector3d& projectedPoint) { return 0.0; };
 
-    auto projection = getBestPlanarRegionAtPositionInWorld(query_point, planar_regions, penaltyFunction);
+    std::cout << "Planar regions size: " << planar_regions_temp.size() << std::endl; 
+    auto projection = getBestPlanarRegionAtPositionInWorld(query_point, planar_regions_temp, penaltyFunction);
 
     return projection.positionInWorld;
 };
@@ -56,57 +58,96 @@ auto update = []()
 //std::function<void()> update;
 //void updateHandler() { update(); };
 
-bool init (std::string name, std::list<std::string> args)
+// bool init (std::string name, std::list<std::string> args)
+// {
+//     if(ros::ok())
+//     {
+//         ROS_ERROR("Ros node already initialized with name %s",
+//                   ros::this_node::getName().c_str());
+//         // return false;
+//     }
+
+//     std::vector<const char *> args_vec;
+//     for(auto& a : args)
+//     {
+//         args_vec.push_back(a.c_str());
+//     }
+
+//     int argc = args_vec.size();
+
+//     char ** argv = (char **)args_vec.data();
+
+//     name += "_cpp";
+
+//     ros::init(argc, argv, name, ros::init_options::NoSigintHandler);
+
+//     ros::NodeHandle nh;
+
+//     ROS_INFO("Initialized roscpp under namespace %s with name %s",
+//              ros::this_node::getNamespace().c_str(),
+//              ros::this_node::getName().c_str()
+//             );
+    
+// //    update = []()
+// //    {
+// //    //    ros::spinOnce();
+// //        std::cout << "update" << std::endl;
+// //        auto planar_terrain_ptr = ros::topic::waitForMessage<convex_plane_decomposition_msgs::PlanarTerrain>("/convex_plane_decomposition_ros/planar_terrain", *nh, ros::Duration(0.5));
+// //        std::cout << "planar terrain message found" << std::endl;
+// //        auto planar_terrain = fromMessage(*planar_terrain_ptr);
+// //        planar_regions = planar_terrain.planarRegions;
+
+
+// //        auto boundaries_ptr = ros::topic::waitForMessage<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries", *nh, ros::Duration(0.5));
+// //        std::cout << "boundaries message found" << std::endl;
+// //        boundaries = *boundaries_ptr;
+// //        pub_boundaries.publish(boundaries);
+// //    };
+
+
+//     sub = nh.subscribe("/convex_plane_decomposition_ros/planar_terrain", 1, callback);
+//     sub_boundaries = nh.subscribe("/convex_plane_decomposition_ros/boundaries", 1, boundaries_callback);
+//     pub_boundaries = nh.advertise<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries/update", 1, true);
+
+//     return true;
+// }
+
+bool init(const std::string& name, const std::list<std::string>& args)
 {
-    if(ros::ok())
+    if (!ros::isInitialized())
     {
-        ROS_ERROR("Ros node already initialized with name %s",
-                  ros::this_node::getName().c_str());
-        return false;
+        // Convert std::list<std::string> to argc/argv format
+        std::vector<const char*> args_vec;
+        for (const auto& a : args)
+        {
+            args_vec.push_back(a.c_str());
+        }
+
+        int argc = args_vec.size();
+        char** argv = const_cast<char**>(args_vec.data());
+
+        // Initialize ROS
+        ros::init(argc, argv, name + "_cpp", ros::init_options::NoSigintHandler);
+        ROS_INFO("ROS initialized with name: %s", (name + "_cpp").c_str());
+    }
+    else
+    {
+        ROS_WARN("ROS is already initialized. Using the existing node handle.");
     }
 
-    std::vector<const char *> args_vec;
-    for(auto& a : args)
+    // Create a new NodeHandle if not already created
+    if (!nh_ptr)
     {
-        args_vec.push_back(a.c_str());
+        nh_ptr = std::make_shared<ros::NodeHandle>();
+        ROS_INFO("NodeHandle created.");
     }
 
-    int argc = args_vec.size();
+    // Set up subscribers and publishers
+    sub = nh_ptr->subscribe("/convex_plane_decomposition_ros/planar_terrain", 1, callback);
+    sub_boundaries = nh_ptr->subscribe("/convex_plane_decomposition_ros/boundaries", 1, boundaries_callback);
+    pub_boundaries = nh_ptr->advertise<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries/update", 1, true);
 
-    char ** argv = (char **)args_vec.data();
-
-    name += "_cpp";
-
-    ros::init(argc, argv, name, ros::init_options::NoSigintHandler);
-
-    ros::NodeHandle nh;
-
-    ROS_INFO("Initialized roscpp under namespace %s with name %s",
-             ros::this_node::getNamespace().c_str(),
-             ros::this_node::getName().c_str()
-            );
-
-//    update = []()
-//    {
-//    //    ros::spinOnce();
-//        std::cout << "update" << std::endl;
-//        auto planar_terrain_ptr = ros::topic::waitForMessage<convex_plane_decomposition_msgs::PlanarTerrain>("/convex_plane_decomposition_ros/planar_terrain", *nh, ros::Duration(0.5));
-//        std::cout << "planar terrain message found" << std::endl;
-//        auto planar_terrain = fromMessage(*planar_terrain_ptr);
-//        planar_regions = planar_terrain.planarRegions;
-
-
-//        auto boundaries_ptr = ros::topic::waitForMessage<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries", *nh, ros::Duration(0.5));
-//        std::cout << "boundaries message found" << std::endl;
-//        boundaries = *boundaries_ptr;
-//        pub_boundaries.publish(boundaries);
-//    };
-
-
-    sub = nh.subscribe("/convex_plane_decomposition_ros/planar_terrain", 1, callback);
-    sub_boundaries = nh.subscribe("/convex_plane_decomposition_ros/boundaries", 1, boundaries_callback);
-    pub_boundaries = nh.advertise<visualization_msgs::MarkerArray>("/convex_plane_decomposition_ros/boundaries/update", 1, true);
-
+    ROS_INFO("Subscribers and publishers set up.");
     return true;
 }
 
