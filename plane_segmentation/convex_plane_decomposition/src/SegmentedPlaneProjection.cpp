@@ -14,7 +14,7 @@ double distanceCost(const Eigen::Vector3d& query, const Eigen::Vector3d& terrain
   const double dx = query.x() - terrainPoint.x();
   const double dy = query.y() - terrainPoint.y();
   const double dz = query.z() - terrainPoint.z();
-  return dx * dx + dy * dy + dz * dz;
+  return dx * dx + dy * dy + 0 * dz * dz;
 }
 
 double distanceCostLowerbound(double distanceSquared) {
@@ -94,13 +94,13 @@ std::vector<RegionSortingInfo> sortWithBoundingBoxes(const Eigen::Vector3d& posi
   regionsAndBboxSquareDistances.reserve(planarRegions.size());
   for (const auto& planarRegion : planarRegions) {
     const Eigen::Vector3d positionInTerrainFrame = planarRegion.transformPlaneToWorld.inverse() * positionInWorld;
-    const double dzdz = positionInTerrainFrame.z() * positionInTerrainFrame.z();
+    // const double dzdz = positionInTerrainFrame.z() * positionInTerrainFrame.z();
 
     RegionSortingInfo regionSortingInfo;
     regionSortingInfo.regionPtr = &planarRegion;
     regionSortingInfo.positionInTerrainFrame = {positionInTerrainFrame.x(), positionInTerrainFrame.y()};
     regionSortingInfo.boundingBoxSquareDistance =
-        squaredDistanceToBoundingBox(regionSortingInfo.positionInTerrainFrame, planarRegion.bbox2d) + dzdz;
+        squaredDistanceToBoundingBox(regionSortingInfo.positionInTerrainFrame, planarRegion.bbox2d); // + dzdz;
 
     regionsAndBboxSquareDistances.push_back(regionSortingInfo);
   }
