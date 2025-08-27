@@ -124,9 +124,9 @@ PlanarTerrainProjection getBestPlanarRegionAtPositionInWorld(const Eigen::Vector
   projection.cost = std::numeric_limits<double>::max();
   for (const auto& regionInfo : sortedRegions) {
     // Skip based on lower bound
-    if (distanceCostLowerbound(regionInfo.boundingBoxSquareDistance) > projection.cost) {
-      continue;
-    }
+    // if (distanceCostLowerbound(regionInfo.boundingBoxSquareDistance) > projection.cost) {
+    //   continue;
+    // }
 
     // Project onto planar region
     const auto projectedPointInTerrainFrame = projectToPlanarRegion(regionInfo.positionInTerrainFrame, *regionInfo.regionPtr);
