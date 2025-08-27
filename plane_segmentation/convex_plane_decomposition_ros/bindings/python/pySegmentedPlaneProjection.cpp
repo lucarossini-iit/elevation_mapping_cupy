@@ -60,7 +60,6 @@ auto project = [](Eigen::Vector3d queryPoint, Eigen::Vector2d desiredVelocity)
         return barrier*k*std::exp(-normVel * (metric*metric));
     };
 
-    std::cout << "Planar regions size: " << planar_regions_temp.size() << std::endl; 
     auto projection = getBestPlanarRegionAtPositionInWorld(queryPoint, planar_regions_temp, penaltyFunction);
 
     return projection.positionInWorld;
