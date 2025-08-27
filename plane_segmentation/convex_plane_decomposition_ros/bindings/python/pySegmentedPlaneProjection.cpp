@@ -37,17 +37,35 @@ void boundaries_callback(const visualization_msgs::MarkerArrayConstPtr& msg)
     boundaries = *msg;
 }
 
-auto project = [](Eigen::Vector3d query_point)
+auto project = [](Eigen::Vector3d queryPoint, Eigen::Vector2d desiredVelocity)
 {
     ros::spinOnce();
 
-    auto penaltyFunction = [](const Eigen::Vector3d& projectedPoint) { return 0.0; };
+    auto penaltyFunction = [&queryPoint, &desiredVelocity](const Eigen::Vector3d& projectedPoint) { 
+         
+        Eigen::Vector2d projectedPointXY = projectedPoint.head(2);
+        Eigen::Vector2d queryPointXY = queryPoint.head(2);
+        Eigen::Vector2d normalizedDelta = (projectedPointXY - queryPointXY).normalized();
+        Eigen::Vector2d normalizedVel = desiredVelocity.normalized();
+        
+        //Compute scalar product (-1 < m < 1) and translate it to (0 < m < 2)
+        double metric = normalizedVel.dot(normalizedDelta) + 1; 
+        double normVel = desiredVelocity.norm();
+        double k = 0.2;
+
+        double normDelta = (projectedPointXY - queryPointXY).norm();
+        double ts = 0.01; // threshold for triggering penalty function 
+        double barrier = normDelta < ts ? 0 : 1; 
+        
+        return barrier*k*std::exp(-normVel * (metric*metric));
+    };
 
     std::cout << "Planar regions size: " << planar_regions_temp.size() << std::endl; 
-    auto projection = getBestPlanarRegionAtPositionInWorld(query_point, planar_regions_temp, penaltyFunction);
+    auto projection = getBestPlanarRegionAtPositionInWorld(queryPoint, planar_regions_temp, penaltyFunction);
 
     return projection.positionInWorld;
 };
+
 
 auto update = []()
 {
