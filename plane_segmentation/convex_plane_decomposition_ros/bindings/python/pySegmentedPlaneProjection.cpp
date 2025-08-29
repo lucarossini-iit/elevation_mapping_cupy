@@ -1,6 +1,10 @@
 #include <convex_plane_decomposition/SegmentedPlaneProjection.h>
 #include <convex_plane_decomposition/PlanarRegion.h>
+#include <convex_plane_decomposition/GeometryUtils.h>
+
+
 #include <convex_plane_decomposition_ros/MessageConversion.h>
+
 #include <convex_plane_decomposition_msgs/PlanarTerrain.h>
 #include <convex_plane_decomposition_msgs/PlanarRegion.h>
 #include <convex_plane_decomposition_msgs/BoundingBox2d.h>
@@ -37,7 +41,7 @@ void boundaries_callback(const visualization_msgs::MarkerArrayConstPtr& msg)
     boundaries = *msg;
 }
 
-auto project = [](Eigen::Vector3d queryPoint, Eigen::Vector2d desiredVelocity)
+auto project = [](const Eigen::Vector3d& queryPoint, const Eigen::Vector2d& desiredVelocity)
 {
     ros::spinOnce();
 
@@ -65,6 +69,20 @@ auto project = [](Eigen::Vector3d queryPoint, Eigen::Vector2d desiredVelocity)
     return projection.positionInWorld;
 };
 
+double distanceFromBoundary(const Eigen::Vector3d& queryPoint) {
+    double distanceFromBoundary = 0.0; 
+    const auto sortedRegions = sortWithBoundingBoxes(queryPoint, planar_regions_temp);
+
+    // Having sorted regions, we need to consider the first one only
+    // Indeed, we are interested in the region where queryPoint is inside
+    const auto planarRegion = *sortedRegions[0].regionPtr;
+
+    // If distance is not zero, then queryPoint is outside the region
+    if(sortedRegions[0].boundingBoxSquareDistance == 0) 
+        distanceFromBoundary = squaredDistance(sortedRegions[0].positionInTerrainFrame, planarRegion.boundaryWithInset.boundary);
+        
+    return std::sqrt(distanceFromBoundary); 
+}
 
 auto update = []()
 {
@@ -192,5 +210,6 @@ PYBIND11_MODULE(pysegmented_plane_projection, m)
     m.def("init", init);
     m.def("shutdown", shutdown);
     m.def("project", project);
+    m.def("distanceFromBoundary", distanceFromBoundary); 
     m.def("update", update);
 }
